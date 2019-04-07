@@ -1,0 +1,353 @@
+{% extends "user/home.html" %}
+
+{% block css %}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9{
+padding-right: 3px;
+padding-left: 3px;
+}
+{% endblock %}
+
+{% block content %}
+
+{% include "user/menu.html" %}
+
+<div class="col-md-9">
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title"><span class="glyphicon glyphicon-map-marker"></span>&nbsp;会员中心</h3>
+        </div>
+        <div class="panel-body">
+            {% for msg in get_flashed_messages(category_filter=["err"]) %}
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                </button>
+                <h4><i class="icon fa fa-check"></i> 操作失败</h4>
+                {{ msg }}
+            </div>
+            {% endfor %}
+            {% for msg in get_flashed_messages(category_filter=["ok"]) %}
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                </button>
+                <h4><i class="icon fa fa-check"></i> 操作成功</h4>
+                {{ msg }}
+            </div>
+            {% endfor %}
+            <form role="form" method="post" enctype="multipart/form-data" novalidate>
+                <fieldset>
+                    <div class="form-group">
+                        <label for="input_name"><span class="glyphicon glyphicon-user"></span>&nbsp;{{ form.name.label
+                            }}</label>
+                        {{ form.name }}
+                        {% for err in form.name.errors %}
+                        <div class="col-md-12">
+                            <p style="color: red">{{ err }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_name"></div>
+                    <div class="form-group">
+                        <label for="input_email"><span class="glyphicon glyphicon-envelope"></span>&nbsp;{{
+                            form.email.label }}</label>
+                        {{ form.email }}
+                        {% for err in form.email.errors %}
+                        <div class="col-md-12">
+                            <p style="color: red">{{ err }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_email"></div>
+                    <div class="form-group">
+                        <label for="input_phone"><span class="glyphicon glyphicon-phone"></span>&nbsp;{{
+                            form.phone.label }}</label>
+                        {{ form.phone }}
+                        {% for err in form.phone.errors %}
+                        <div class="col-md-12">
+                            <p style="color: red">{{ err }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_phone"></div>
+                    <div>
+                        <label for="addr-show">收货地区：
+                            {{ form.show_area }}
+                            {{ form.area }}
+                        </label>
+                        <div id="addr-choice">
+                            <ul id="title-wrap">
+                                <li value="0">省份</li>
+                                <li value="1">城市</li>
+                                <li value="2">县区</li>
+                                <li value="3">乡镇</li>
+                            </ul>
+                            <div id="show-panel">
+                                <ul id="addr-wrap">
+                                </ul>
+                            </div>
+                        </div>
+                        <button type="button" class="btn met_choice">选择</button>
+                    </div>
+
+                    {{ form.csrf_token }}
+                    {{ form.submit }}
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='base/js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='base/js/city.js') }}"></script>
+<script>
+
+//****************针对第二种方式的具体js实现部分******************//
+//****************所使用的数据是city.js******************//
+
+/*根据id获取对象*/
+function $(str) {
+    return document.getElementById(str);
+}
+
+var addrShow = $('addr-show');  //最终地址显示框
+var addrSend = $('addr-send');  //最终上传地址
+var titleWrap = $('title-wrap').getElementsByTagName('LI');
+var addrWrap = $('addr-wrap');   //省市区显示模块
+var btn = document.getElementsByClassName('met_choice')[0];  //确定按钮
+var selectVal;
+
+var current = {
+    prov: '',
+    city: '',
+    area: '',
+    town: '',
+    provVal: '',
+    cityVal: '',
+    areaVal: '',
+    townVal: ''
+};
+
+var province,city,area,town;
+/*自动加载省份列表*/
+window.onload = showProv();
+
+function showProv() {
+    addrWrap.innerHTML = '';
+    /*addrShow.value = '';*/
+    btn.disabled = true;
+    titleWrap[0].className = 'titleSel';
+
+    jQuery.ajax({url:"{{ url_for('user.area_get') }}",
+            data:{req_type:"1"},
+            dataType: "json",
+            success:function(data){
+                province = data;
+                var len = province.length;
+                for (var i = 0; i < len; i++){
+                    var provLi = document.createElement('li');
+                    provLi.innerText = province[i][1];
+                    provLi.index = i;
+                    addrWrap.appendChild(provLi);
+                }
+            }
+        });
+}
+
+/*************************需要给动态生成的li绑定点击事件********************** */
+addrWrap.onclick = function (e) {
+    var n;
+    var e = e || window.event;
+    var target = e.target || e.srcElement;
+    if (target && target.nodeName == 'LI') {
+        /*先判断当前显示区域显示的是省市区的那部分*/
+        for (var z = 0; z < 4; z++) {
+            if (titleWrap[z].className == 'titleSel')
+                n = z;
+        }
+        /*显示的处理函数*/
+        switch (n) {
+            case 0:
+                showCity(target.index);
+                break;
+            case 1:
+                showArea(target.index);
+                break;
+            case 2:
+                showTown(target.index);
+                break;
+            case 3:
+                selectTown(target.index);
+                break;
+            default:
+                showProv();
+        }
+    }
+};
+
+/*选择省份之后显示该省下所有城市*/
+function showCity(index) {
+    addrWrap.innerHTML = '';
+    current.prov = province[index][0];
+    current.provVal = province[index][1];
+    titleWrap[0].innerHTML = current.provVal;
+    titleWrap[0].className = '';
+    titleWrap[1].className = 'titleSel';
+    jQuery.ajax({url:"{{ url_for('user.area_get') }}",
+            data:"req_type=2&req_code=" + province[index][0],
+            dataType: "json",
+            success:function(data){
+                city = data;
+                var len = city.length;
+                for (var i = 0; i < len; i++){
+                    var cityLi = document.createElement('li');
+                    cityLi.innerText = city[i][1];
+                    cityLi.index = i;
+                    addrWrap.appendChild(cityLi);
+                }
+            }
+        });
+}
+
+/*选择城市之后显示该城市下所有县区*/
+function showArea(index) {
+    if(index)
+    {
+        addrWrap.innerHTML = '';
+        current.city = city[index][0];
+        current.cityVal = city[index][1];
+        titleWrap[1].innerHTML = current.cityVal;
+        titleWrap[1].className = '';
+        titleWrap[2].className = 'titleSel';
+        jQuery.ajax({url:"{{ url_for('user.area_get') }}",
+                data:"req_type=3&req_code=" + city[index][0],
+                dataType: "json",
+                success:function(data){
+                    area = data;
+                    var len = area.length;
+                    for (var i = 0; i < len; i++){
+                        var areaLi = document.createElement('li');
+                        areaLi.innerText = area[i][1];
+                        areaLi.index = i;
+                        addrWrap.appendChild(areaLi);
+                    }
+                }
+            });
+    }
+
+/*
+    var areaLen = provice[current.prov].city[index].districtAndCounty.length;
+    if (areaLen == 0) {
+        addrShow02.value = current.provVal + '-' + current.cityVal;
+    }
+    for (var k = 0; k < areaLen; k++) {
+        var cityLi = document.createElement('li');
+        cityLi.innerText = provice[current.prov].city[index].districtAndCounty[k];
+        cityLi.index = k;
+        addrWrap.appendChild(cityLi);
+    }
+    */
+}
+
+/*选择县区之后显示该县区下所有乡镇*/
+function showTown(index) {
+    addrWrap.innerHTML = '';
+    current.area = area[index][0];
+    current.areaVal = area[index][1];
+    titleWrap[2].innerHTML = current.areaVal;
+    titleWrap[2].className = '';
+    titleWrap[3].className = 'titleSel';
+    jQuery.ajax({url:"{{ url_for('user.area_get') }}",
+            data:"req_type=4&req_code=" + area[index][0],
+            dataType: "json",
+            success:function(data){
+                town = data;
+                var len = town.length;
+                if(len <=0){
+                    btn.disabled = false;
+                    var townLi = document.createElement('li');
+                    townLi.innerText = current.areaVal;
+                    townLi.index = 0;
+                    addrWrap.appendChild(townLi);
+                    townLi.style.backgroundColor = '#23B7E5';
+                    current.town = '0';
+                }else{
+                    for (var i = 0; i < len; i++){
+                        var townLi = document.createElement('li');
+                        townLi.innerText = town[i][1];
+                        townLi.index = i;
+                        addrWrap.appendChild(townLi);
+                    }
+                }
+            }
+        });
+}
+
+/*选中具体的县区*/
+function selectTown(index) {
+    console.log(index)
+    if(index != 0){
+        btn.disabled = false;
+        current.town = town[index][0];
+        if(selectVal){
+            addrWrap.getElementsByTagName('li')[selectVal].style.backgroundColor = '';
+        }
+        addrWrap.getElementsByTagName('li')[index].style.backgroundColor = '#23B7E5';
+        selectVal = index;
+        current.townVal = town[index][1];
+    }
+}
+
+/*点击确定后恢复成初始状态，且将所选地点显示在输入框中*/
+btn.onclick = function () {
+    addrShow.value = current.provVal + ' ' + current.cityVal + ' ' + current.areaVal + ' ' + current.townVal;
+    addrSend.value = current.prov + '_' + current.city + '_' + current.area + '_' + current.town;
+    addrWrap.getElementsByTagName('li')[selectVal].style.backgroundColor = '';
+};
+
+/*分别点击省市区标题的处理函数*/
+document.getElementById('title-wrap').onclick = function (e) {
+    var e = e || window.event;
+    var target = e.target || e.srcElement;
+    if (target && target.nodeName == 'LI') {
+        for (var z = 0; z < 4; z++) {
+            titleWrap[z].className = '';
+        }
+        target.className = 'titleSel';
+        addrWrap.innerHTML = '';
+        if (target.value == '0') {
+            showProv();
+        } else if (target.value == '1') {
+            //showCity(current.prov);
+            var len = city.length;
+            for (var i = 0; i < len; i++){
+                var cityLi = document.createElement('li');
+                cityLi.innerText = city[i][1];
+                cityLi.index = i;
+                addrWrap.appendChild(cityLi);
+            }
+        } else if (target.value == '2') {
+            //showArea();
+            var len = area.length;
+            for (var i = 0; i < len; i++){
+                var areaLi = document.createElement('li');
+                areaLi.innerText = area[i][1];
+                areaLi.index = i;
+                addrWrap.appendChild(areaLi);
+            }
+        } else {
+            showTown(current.area);
+        }
+    }
+};
+
+</script>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+    $(document).ready(function(){
+        $("#m-0").addClass("active")
+    });
+</script>
+
+{% endblock %}

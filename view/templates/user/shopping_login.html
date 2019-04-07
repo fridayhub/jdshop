@@ -1,0 +1,111 @@
+{% extends "user/home.html" %}
+{% block css %}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9{
+padding-right: 3px;
+padding-left: 3px;
+}
+{% endblock %}
+
+
+{% block content %}
+{% include "user/menu.html" %}
+
+<div class="col-md-9">
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title"><span class="glyphicon glyphicon-map-marker"></span>&nbsp;帐号授权中心</h3>
+        </div>
+        <div class="panel-body">
+            {% for msg in get_flashed_messages(category_filter=["ok"]) %}
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                </button>
+                <h4><i class="icon fa fa-check"></i> 授权成功</h4>
+                {{ msg }}
+            </div>
+            {% endfor %}
+            {% for msg in get_flashed_messages(category_filter=["err"]) %}
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                </button>
+                <h4><i class="icon fa fa-ban"></i> 授权失败</h4>
+                {{ msg }}
+            </div>
+            {% endfor %}
+
+            <div class="qrcode-login" style="display: block; visibility: visible;">
+                <div class="mc">
+                    <p style="color:red">京东授权</p>
+                    <div class="qrcode-main">
+                        <div class="qrcode-img" style="left: 64px;">
+                            <img src="{{ url_for('static', filename='qr_code/'+  qr_code_pic, t=range(0000, 9999) | random ) }}" id="qr_code">
+                        </div>
+                        <div class="qrcode-help" style="display: none;"></div>
+                    </div>
+                    <div class="qrcode-panel">
+                       <div class="col-md-12">
+                           <p style="color:green" id="show_qr_result"></p>
+                       </div>
+                        <button class="qr_reflash">刷新二维码</button><br/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function(){
+        $("#m-4").addClass("active");
+
+        $(".qr_reflash").click(function(){
+            window.queen_id = setInterval(reload_img, 1000);
+            var xhr=$.ajax({
+                            url:"{{ url_for('user.jd_login') }}",
+                            timeout:50000, //超时时间50s
+                            type:"GET",
+                            dataType:"json",
+                            success:function(res){ //请求成功的回调函数
+                                if(typeof window.queen_id != 'undefined'){
+                                    clearInterval(window.queen_id); //图片停止刷新
+                                }
+                                if (res.ok == 1) {
+                                    $("#show_qr_result").empty();
+                                    $("#show_qr_result").append("扫描成功");
+                                } else {
+                                    $("#show_qr_result").empty();
+                                    $("#show_qr_result").append("扫描失败，请刷新重新扫描");
+                                }
+                            },
+                            complete:function(XMLHttpRequest,status){ //请求完成后最终执行参数
+                                if(typeof window.queen_id != 'undefined'){
+                                    clearInterval(window.queen_id); //图片停止刷新
+                                }
+                                if(status == 'timeout'){
+                                    xhr.abort();  // 超时后中断请求
+                                    console.log("after abort")
+                                     alert("网络超时，请刷新", function () {
+                                         console.log("before reload")
+                                         location.reload();
+                                         console.log("after reload")
+                                        })
+                                    }
+                                }
+                            })
+        });
+    });
+
+    function reload_img(){
+        console.log('in reload_img')
+        var qr_code=document.getElementById('qr_code');
+        console.log(qr_code)
+        qr_code_pic = "{{ qr_code_pic }}"
+        //qr_code.setAttribute("src", "{{ url_for('static', filename='qr_code/'+  qr_code_pic, t=range(0000, 9999) | random ) }}");
+        qr_code.setAttribute("src", "/static/qr_code/" + qr_code_pic + "?t=" + Math.random());
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "user/home.html" %}
+
+{% block css %}
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9{
+padding-right: 3px;
+padding-left: 3px;
+}
+{% endblock %}
+
+{% block content %}
+{% include "user/menu.html" %}
+<div class="col-md-9">
+    <div class="panel panel-warning">
+        <div class="panel-heading">
+            <h3 class="panel-title"><span class="glyphicon glyphicon-map-marker"></span>&nbsp;编辑任务</h3>
+        </div>
+        <div class="panel-body">
+            {% for msg in get_flashed_messages(category_filter=["ok"]) %}
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×
+                    </button>
+                    <h4><i class="icon fa fa-check"></i> 操作成功</h4>
+                    {{ msg }}
+                </div>
+            {% endfor %}
+            <form role="form" method="post" novalidate>
+                <fieldset>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-gift"></span>&nbsp;{{ form.goods_id.label }}</label>
+                        {{ form.goods_id}}
+                        {% for err in form.goods_id.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_goods_id"></div>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-gift"></span>&nbsp;{{ form.goods_name.label }}</label>
+                        {{ form.goods_name }}
+                        {% for err in form.goods_name.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_goods_name"></div>
+                    <div class="form-group">
+                        <label><span
+                                class="glyphicon glyphicon-list"></span>&nbsp;{{ form.goods_channel.label }}</label>
+                        {{ form.goods_channel }}
+                        {% for err in form.goods_channel.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_buy_type"></div>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-list"></span>&nbsp;{{ form.buy_type.label }}</label>
+                        {{ form.buy_type }}
+                        {% for err in form.buy_type.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_buy_type"></div>
+                    <div class="form-group">
+                        <label><span class="glyphicon glyphicon-calendar"></span>&nbsp;{{ form.buy_time.label }}</label>
+                        {{ form.buy_time }}
+                        {% for err in form.buy_time.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_buy_time"></div>
+                    <div class="form-group">
+                        <label for="input_original_price"><span class="glyphicon glyphicon-euro"></span>&nbsp;{{ form.original_price.label }}</label>
+                        <!--<input id="input_original_price" class="form-control" placeholder="原价" name="original_price" type="text" autofocus value="￥5599.00">-->
+                        <div class="input-group">
+                            <span class="input-group-addon">￥</span>
+                            {{ form.original_price }}
+                        </div>
+                        {% for err in form.original_price.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_buy_price"></div>
+                    <div class="form-group">
+                        <label for="input_buy_price"><span class="glyphicon glyphicon-euro"></span>&nbsp;{{ form.buy_price.label }}</label>
+                        <div class="input-group">
+                            <span class="input-group-addon">￥</span>
+                            {{ form.buy_price }}
+                        </div>
+                        {% for err in form.buy_price.errors %}
+                            <div class="col-md-12">
+                                <p style="color: red">{{ err }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-12" id="error_buy_price"></div>
+                    {{ form.csrf_token }}
+                    {{ form.submit }}
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<!--
+<script>
+    $(document).ready(function(){
+        $("#m-1").addClass("active")
+    });
+
+</script>
+-->
+<script type="text/javascript" src="{{ url_for('static', filename='base/laydate/laydate.js') }}" ></script>
+<script>
+  laydate.render({
+  elem: '#input_buy_time', //指定元素
+  type: 'datetime',
+});
+</script>
+{% endblock %}
+

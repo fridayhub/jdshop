@@ -1,0 +1,47 @@
+/*全局样式*/
+#addr-show{
+    width: 200px;
+    height: 25px;
+    margin-bottom: 10px;
+}
+
+
+/*方法样式部分*/
+#addr-choice{
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+#title-wrap li,#addr-wrap li{
+    list-style: none;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+
+#title-wrap li{
+    width:163px;
+    height: 45px;
+    line-height: 45px;
+    margin-bottom: 10px;
+}
+
+.titleSel{
+    border-bottom: 2px solid #23B7E5;
+}
+
+#addr-wrap li{
+    width: 83px;
+    height: 30px;
+    border-radius: 4px;
+    line-height: 30px;
+    font-size: 14px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+#addr-wrap li:hover{
+    background-color: #23B7E5;
+}

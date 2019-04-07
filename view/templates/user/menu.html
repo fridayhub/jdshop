@@ -1,0 +1,19 @@
+<div class="col-md-2">
+    <div class="list-group">
+        <a id="m-0" href="{{ url_for('user.user_info') }}" class="list-group-item">
+            <span class="glyphicon glyphicon-user"></span>&nbsp;会员中心
+        </a>
+        <a id="m-1" href="{{ url_for('user.task_add') }}" class="list-group-item">
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;添加任务
+        </a>
+        <a id="m-2" href="{{ url_for('user.task_list', page=1) }}" class="list-group-item">
+            <span class="glyphicon glyphicon-list-alt"></span>&nbsp;查看任务
+        </a>
+        <a id="m-3" href="{{ url_for('user.pwd') }}" class="list-group-item">
+            <span class="glyphicon glyphicon-lock"></span>&nbsp;修改密码
+        </a>
+        <a id="m-4" href="{{ url_for('user.shopping_login') }}" class="list-group-item">
+            <span class="glyphicon glyphicon-log-in"></span>&nbsp;京东\淘宝 授权
+        </a>
+    </div>
+</div>
